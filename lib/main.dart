@@ -34,7 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
   AutovalidateMode autovalidateMode = AutovalidateMode.disabled;
   String? searchTerm;
 
-  void submit() async {
+  void submit() {
     setState(() {
       autovalidateMode = AutovalidateMode.always;
     });
@@ -42,67 +42,87 @@ class _MyHomePageState extends State<MyHomePage> {
     final form = formkey.currentState;
     if (form == null || !form.validate()) return;
     form.save();
-    try {
-      await context.read<AppProvider>().getResult(searchTerm!);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => SuccessPage(),
-        ),
-      );
-    } catch (e) {
-      showDialog(
-        context: (context),
-        builder: (context) => AlertDialog(
-          content: Text('Someting went wrong'),
-        ),
-      );
-    }
+    context.read<AppProvider>().getResult(context, searchTerm!);
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (_) => SuccessPage(),
+    //   ),
+    // );
+    // showDialog(
+    //   context: (context),
+    //   builder: (context) => AlertDialog(
+    //     content: Text('Someting went wrong'),
+    //   ),
+    // );
   }
 
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppProvider>().state;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Sample4'),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 30),
-          child: Form(
-            key: formkey,
-            autovalidateMode: autovalidateMode,
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                TextFormField(
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    label: Text('Search'),
-                    prefixIcon: Icon(Icons.search),
+
+    // if (appState == AppState.success) {
+    //   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    //     Navigator.push(
+    //         context, MaterialPageRoute(builder: (context) => SuccessPage()));
+    //   });
+    // } else if (appState == AppState.error) {
+    //   WidgetsBinding.instance.addPostFrameCallback(
+    //     (timeStamp) {
+    //       showDialog(
+    //         context: context,
+    //         builder: (context) => AlertDialog(
+    //           content: Text('Someting went wrong'),
+    //         ),
+    //       );
+    //     },
+    //   );
+    // }
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Sample4'),
+          centerTitle: true,
+        ),
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30),
+            child: Form(
+              key: formkey,
+              autovalidateMode: autovalidateMode,
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  TextFormField(
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      label: Text('Search'),
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    validator: (String? value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Search trem required';
+                      }
+                      return null;
+                    },
+                    onSaved: (String? value) => searchTerm = value,
                   ),
-                  validator: (String? value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Search trem required';
-                    }
-                    return null;
-                  },
-                  onSaved: (String? value) => searchTerm = value,
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                ElevatedButton(
-                  child: Text(
-                    appState == AppState.loading ? 'Loading...' : 'Get Result',
-                    style: TextStyle(fontSize: 20),
+                  SizedBox(
+                    height: 30,
                   ),
-                  onPressed: appState == AppState.loading ? null : submit,
-                ),
-              ],
+                  ElevatedButton(
+                      child: Text(
+                        appState == AppState.loading
+                            ? 'Loading...'
+                            : 'Get Result',
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      onPressed: appState == AppState.loading ? null : submit),
+                ],
+              ),
             ),
           ),
         ),
